@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>AR Moto con Video</title>
+    <script src="./libs/three.min.js"></script>
+    <script src="./libs/mindar-image-three.prod.js"></script>
+    <script type="module">
+      document.addEventListener("DOMContentLoaded", async () => {
+        const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+          container: document.body,
+          imageTargetSrc: "./targets/moto.mind",
+          maxTrack: 1,
+        });
+
+        const { renderer, scene, camera } = mindarThree;
+        const anchor = mindarThree.addAnchor(0);
+
+        // Crear video
+        const video = document.createElement("video");
+        video.src = "./assets/videomoto.mp4";
+        video.crossOrigin = "anonymous";
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+
+        const texture = new THREE.VideoTexture(video);
+        const screenGeo = new THREE.PlaneGeometry(1, 0.5625); // 16:9 ratio
+        const screenMat = new THREE.MeshBasicMaterial({ map: texture });
+        const screenMesh = new THREE.Mesh(screenGeo, screenMat);
+
+        screenMesh.position.set(0, 0, 0);
+        screenMesh.rotation.x = -Math.PI / 2; // plana sobre target
+
+        anchor.group.add(screenMesh);
+
+        // Play/pause control
+        anchor.onTargetFound = () => video.play();
+        anchor.onTargetLost = () => video.pause();
+
+        await mindarThree.start();
+        renderer.setAnimationLoop(() => {
+          renderer.render(scene, camera);
+        });
+      });
+    </script>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      video {
+        display: none;
+      }
+    </style>
+  </head>
+  <body></body>
+</html>
