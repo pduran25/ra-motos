@@ -2,20 +2,21 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>MindAR Video Test</title>
-    <script src="./libs/three.min.js"></script>
-    <script src="./libs/mindar-image-three.prod.js"></script>
+    <title>MindAR Video ESModule</title>
     <style>
       body { margin: 0; overflow: hidden; }
       video { display: none; }
     </style>
   </head>
   <body>
-    <script>
+    <script type="module">
+      import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js';
+      import { MindARThree } from 'https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js';
+
       document.addEventListener("DOMContentLoaded", async () => {
-        const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+        const mindarThree = new MindARThree({
           container: document.body,
-          imageTargetSrc: "./target/moto.mind", // ← ¡corregida!
+          imageTargetSrc: "./target/moto.mind",
           maxTrack: 1,
         });
 
@@ -36,7 +37,6 @@
 
         const videoPlane = new THREE.Mesh(geometry, material);
         videoPlane.position.set(0, 0, 0);
-
         anchor.group.add(videoPlane);
 
         anchor.onTargetFound = () => {
