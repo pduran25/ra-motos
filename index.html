@@ -4,11 +4,13 @@
   <meta charset="UTF-8" />
   <title>Tablet AR Interactivo</title>
 
-  <!-- THREE.js y GLTFLoader -->
+  <!-- Cargar solo una versión de Three.js -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+
+  <!-- GLTFLoader (independiente) -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/GLTFLoader.js"></script>
 
-  <!-- MindAR sin módulos -->
+  <!-- MindAR (no usar versión con su propia THREE para evitar conflicto) -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
 
   <style>
@@ -53,8 +55,7 @@
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
       try {
-        const THREE = window.MINDAR.IMAGE.THREE;
-
+        // Usar el THREE global ya cargado
         const mindarThree = new window.MINDAR.IMAGE.MindARThree({
           container: document.querySelector("#ar-container"),
           imageTargetSrc: "./target/moto.mind",
@@ -64,7 +65,7 @@
         const { renderer, scene, camera } = mindarThree;
         const anchor = mindarThree.addAnchor(0);
 
-        // Video
+        // Crear video
         const video = document.createElement("video");
         video.src = "./assets/videomotor.mp4";
         video.crossOrigin = "anonymous";
@@ -73,16 +74,16 @@
         video.playsInline = true;
         video.setAttribute("preload", "auto");
 
-        const texture = new THREE.VideoTexture(video);
+        const videoTexture = new THREE.VideoTexture(video);
         const screen = new THREE.Mesh(
           new THREE.PlaneGeometry(1, 0.6),
-          new THREE.MeshBasicMaterial({ map: texture })
+          new THREE.MeshBasicMaterial({ map: videoTexture })
         );
         screen.visible = false;
         screen.position.set(0, 0.5, 0.06);
 
         let tablet;
-        const loader = new THREE.GLTFLoader();
+        const loader = new GLTFLoader(); // FUNCIONA porque fue cargado por <script>
         loader.load('./assets/tablet.glb', (gltf) => {
           tablet = gltf.scene;
           tablet.scale.set(0.2, 0.2, 0.2);
@@ -141,6 +142,7 @@
           }
           renderer.render(scene, camera);
         });
+
       } catch (err) {
         console.error("❌ Error crítico:", err);
         document.getElementById("overlay").innerText = "⚠️ Error cargando AR. Revisa consola.";
