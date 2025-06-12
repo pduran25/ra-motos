@@ -4,19 +4,18 @@
   <meta charset="UTF-8" />
   <title>Tablet AR Interactivo</title>
 
-  <!-- Cargar Three.js -->
+  <!-- Three.js -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
 
-  <!-- Cargar GLTFLoader que registra en global -->
+  <!-- GLTFLoader (como script independiente que NO define THREE.GLTFLoader) -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/GLTFLoader.js"></script>
 
-  <!-- Cargar MindAR -->
+  <!-- MindAR -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
 
   <style>
     html, body {
       margin: 0;
-      padding: 0;
       overflow: hidden;
       width: 100vw;
       height: 100vh;
@@ -30,19 +29,19 @@
       left: 0;
     }
     canvas {
-      position: absolute;
+      position: absolute !important;
       width: 100% !important;
       height: 100% !important;
       z-index: 2;
     }
     #overlay {
       position: absolute;
+      z-index: 3;
       bottom: 10px;
       left: 10px;
       color: white;
-      background: rgba(0,0,0,0.5);
+      background-color: rgba(0,0,0,0.5);
       padding: 10px;
-      z-index: 3;
       font-family: sans-serif;
     }
     video { display: none; }
@@ -55,10 +54,12 @@
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
       try {
+        const THREE = window.MINDAR.IMAGE.THREE;
+
         const mindarThree = new window.MINDAR.IMAGE.MindARThree({
           container: document.querySelector("#ar-container"),
           imageTargetSrc: "./target/moto.mind",
-          maxTrack: 1,
+          maxTrack: 1
         });
 
         const { renderer, scene, camera } = mindarThree;
@@ -86,9 +87,8 @@
         let touched = false;
         let rotating = false;
 
-        // ✅ USAMOS la clase global que sí existe gracias al <script>
-        const loader = new THREE.GLTFLoader();
-        loader.load('./assets/tablet.glb', (gltf) => {
+        const loader = new THREE__GLTFLoader(); // 💡 usamos clase global expuesta por GLTFLoader.js
+        loader.load("./assets/tablet.glb", (gltf) => {
           tablet = gltf.scene;
           tablet.scale.set(0.2, 0.2, 0.2);
           tablet.rotation.x = THREE.MathUtils.degToRad(-90);
@@ -100,7 +100,6 @@
           const rect = renderer.domElement.getBoundingClientRect();
           pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
           pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
           raycaster.setFromCamera(pointer, camera);
           if (tablet) {
             const intersects = raycaster.intersectObject(tablet, true);
@@ -114,16 +113,16 @@
         anchor.onTargetFound = () => {
           console.log("🎯 Imagen detectada");
           document.getElementById("overlay").innerText = "✅ Imagen detectada";
+          if (tablet) tablet.rotation.x = THREE.MathUtils.degToRad(-90);
           touched = false;
           rotating = false;
-          if (tablet) tablet.rotation.x = THREE.MathUtils.degToRad(-90);
           screen.visible = false;
           video.pause();
         };
 
         anchor.onTargetLost = () => {
-          video.pause();
           document.getElementById("overlay").innerText = "📷 Apunta a la imagen target para iniciar";
+          video.pause();
         };
 
         await mindarThree.start();
@@ -140,11 +139,18 @@
           }
           renderer.render(scene, camera);
         });
+
       } catch (err) {
         console.error("❌ Error crítico:", err);
         document.getElementById("overlay").innerText = "⚠️ Error cargando AR. Revisa consola.";
       }
     });
+  </script>
+
+  <!-- Registramos GLTFLoader en el global como workaround -->
+  <script>
+    // 📌 Necesario porque GLTFLoader.js no asigna automáticamente en THREE
+    window.THREE__GLTFLoader = window.GLTFLoader;
   </script>
 </body>
 </html>
