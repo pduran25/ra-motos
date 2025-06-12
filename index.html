@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8" />
     <title>MindAR Video Test</title>
-    <script src="./libs/three.min.js"></script>
     <script src="./libs/mindar-image-three.prod.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
@@ -15,7 +14,7 @@
       document.addEventListener("DOMContentLoaded", async () => {
         const mindarThree = new window.MINDAR.IMAGE.MindARThree({
           container: document.body,
-          imageTargetSrc: "./targets/moto.mind",
+          imageTargetSrc: "./target/moto.mind",
           maxTrack: 1,
         });
 
