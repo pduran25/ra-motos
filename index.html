@@ -1,117 +1,80 @@
-Codigo funcional
-
 <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>MindAR AR Video Final</title>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      width: 100%;
-      height: 100%;
-      background: #000;
-    }
-
-    #ar-container {
-      position: absolute;
-      width: 100vw;
-      height: 100vh;
-      top: 0;
-      left: 0;
-      z-index: 1;
-    }
-
-    canvas {
-      width: 100vw !important;
-      height: 100vh !important;
-      position: absolute !important;
-      top: 0;
-      left: 0;
-      z-index: 2;
-    }
-
-    #overlay {
-      position: absolute;
-      z-index: 3;
-      color: white;
-      background-color: rgba(0,0,0,0.5);
-      font-family: sans-serif;
-      padding: 10px;
-      bottom: 10px;
-      left: 10px;
-      font-size: 14px;
-    }
-  </style>
-</head>
-<body>
-  <div id="ar-container"></div>
-  <div id="overlay">📷 Apunta a la imagen target para iniciar</div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      try {
-        const THREE = window.MINDAR.IMAGE.THREE;
-
-        console.log("⏳ Cargando archivo .mind...");
-        const mindarThree = new window.MINDAR.IMAGE.MindARThree({
-          container: document.querySelector("#ar-container"),
-          imageTargetSrc: "./target/moto.mind", // asegúrate que exista y sea válido
-          maxTrack: 1,
-        });
-        console.log("✅ .mind cargado correctamente");
-
-        const { renderer, scene, camera } = mindarThree;
-        const anchor = mindarThree.addAnchor(0);
-
-        const video = document.createElement("video");
-        video.src = "./assets/videomotor.mp4"; // asegúrate que el archivo exista
-        video.crossOrigin = "anonymous";
-        video.loop = true;
-        video.muted = true; // para que funcione autoplay
-        video.playsInline = true;
-        video.setAttribute("preload", "auto");
-
-        const texture = new THREE.VideoTexture(video);
-        texture.minFilter = THREE.LinearFilter;
-        texture.magFilter = THREE.LinearFilter;
-        texture.format = THREE.RGBFormat;
-
-        const geometry = new THREE.PlaneGeometry(1, 0.6); // ajusta según tamaño
-        const material = new THREE.MeshBasicMaterial({ map: texture });
-        const videoPlane = new THREE.Mesh(geometry, material);
-        videoPlane.position.set(0, 0, 0);
-        anchor.group.add(videoPlane);
-
-        anchor.onTargetFound = () => {
-          console.log("🎯 Imagen detectada");
-          document.getElementById("overlay").innerText = "✅ Imagen detectada";
-          video.play();
-        };
-
-        anchor.onTargetLost = () => {
-          console.log("🚫 Imagen perdida");
-          document.getElementById("overlay").innerText = "📷 Apunta a la imagen target para iniciar";
-          video.pause();
-        };
-
-        console.log("⏳ Iniciando MindAR...");
-        await mindarThree.start();
-        console.log("✅ MindAR iniciado correctamente");
-
-        renderer.setAnimationLoop(() => {
-          renderer.render(scene, camera);
-        });
-
-      } catch (err) {
-        console.error("❌ Error crítico:", err);
-        document.getElementById("overlay").innerText = "⚠️ Error cargando AR. Revisa consola.";
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Tablet AR Video Interactivo</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/aframe/mindar-image-aframe.prod.js"></script>
+    <style>
+      body, html { margin: 0; overflow: hidden; }
+      #overlay {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        color: white;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 10px;
+        z-index: 99;
+        font-family: sans-serif;
       }
-    });
-  </script>
-</body>
-</html>
+    </style>
+  </head>
+  <body>
+    <div id="overlay">📷 Apunta al target y toca la pantalla de la tablet</div>
 
+    <a-scene 
+      mindar-image="imageTargetSrc: ./target/moto.mind;" 
+      embedded 
+      color-space="sRGB" 
+      renderer="colorManagement: true, physicallyCorrectLights: true;" 
+      vr-mode-ui="enabled: false" 
+      device-orientation-permission-ui="enabled: true">
+
+      <!-- Assets -->
+      <a-assets>
+        <a-asset-item id="modelo-tablet" src="./assets/tablet.glb"></a-asset-item>
+        <video id="video-promo" src="./assets/video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <!-- Target -->
+      <a-entity mindar-image-target="targetIndex: 0">
+
+        <!-- Modelo de la tablet -->
+        <a-gltf-model 
+          id="tablet" 
+          src="#modelo-tablet" 
+          scale="0.2 0.2 0.2" 
+          position="0 0 0" 
+          rotation="-90 0 0">
+        </a-gltf-model>
+
+        <!-- Pantalla de video (plano encima del modelo) -->
+        <a-video 
+          id="pantalla" 
+          src="#video-promo" 
+          position="0 0.45 0.05" 
+          rotation="-90 0 0" 
+          width="0.6" 
+          height="0.35" 
+          visible="false">
+        </a-video>
+
+      </a-entity>
+    </a-scene>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const pantalla = document.querySelector('#pantalla');
+        const video = document.querySelector('#video-promo');
+        const tablet = document.querySelector('#tablet');
+
+        tablet.addEventListener('click', () => {
+          pantalla.setAttribute('visible', 'true');
+          video.play();
+        });
+      });
+    </script>
+  </body>
+</html>
