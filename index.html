@@ -2,113 +2,115 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>MindAR AR Video Final</title>
+  <title>Tablet AR Interactivo</title>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
+  <script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
+  <script type="module">
+    import { GLTFLoader } from 'https://unpkg.com/three@0.150.1/examples/jsm/loaders/GLTFLoader.js';
+    import { OrbitControls } from 'https://unpkg.com/three@0.150.1/examples/jsm/controls/OrbitControls.js';
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const THREE = window.MINDAR.IMAGE.THREE;
+
+      const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+        container: document.body,
+        imageTargetSrc: "./target/moto.mind",
+        maxTrack: 1
+      });
+
+      const { renderer, scene, camera } = mindarThree;
+      const anchor = mindarThree.addAnchor(0);
+      const raycaster = new THREE.Raycaster();
+      const pointer = new THREE.Vector2();
+
+      // VIDEO
+      const video = document.createElement("video");
+      video.src = "./assets/video.mp4";
+      video.crossOrigin = "anonymous";
+      video.loop = true;
+      video.muted = false;
+      video.playsInline = true;
+      video.setAttribute("preload", "auto");
+
+      const videoTexture = new THREE.VideoTexture(video);
+      const screenGeometry = new THREE.PlaneGeometry(1, 0.6);
+      const screenMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
+      const screen = new THREE.Mesh(screenGeometry, screenMaterial);
+      screen.visible = false; // invisible hasta tocar
+
+      let tablet;
+
+      // Cargar modelo GLB de tablet
+      const loader = new GLTFLoader();
+      const gltf = await loader.loadAsync("./assets/tablet.glb");
+      tablet = gltf.scene;
+      tablet.scale.set(0.2, 0.2, 0.2);
+      tablet.rotation.x = THREE.MathUtils.degToRad(-90); // vertical de pie
+      tablet.position.set(0, 0, 0);
+      anchor.group.add(tablet);
+
+      screen.position.set(0, 0.5, 0.06); // ajusta para que encaje con la pantalla
+      anchor.group.add(screen);
+
+      let touched = false;
+      let rotating = false;
+
+      // Captura de toque
+      renderer.domElement.addEventListener("click", (event) => {
+        const rect = renderer.domElement.getBoundingClientRect();
+        pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(pointer, camera);
+        const intersects = raycaster.intersectObject(tablet, true);
+
+        if (intersects.length > 0 && !touched && !rotating) {
+          touched = true;
+          rotating = true;
+        }
+      });
+
+      anchor.onTargetFound = () => {
+        console.log("🎯 Imagen detectada");
+        video.pause(); // por si ya estaba reproduciendo
+        touched = false;
+        rotating = false;
+        tablet.rotation.x = THREE.MathUtils.degToRad(-90); // reset posición vertical
+        screen.visible = false;
+      };
+
+      anchor.onTargetLost = () => {
+        video.pause();
+      };
+
+      await mindarThree.start();
+      renderer.setAnimationLoop(() => {
+        if (rotating) {
+          // animar rotación de vertical a horizontal
+          if (tablet.rotation.x < 0) {
+            tablet.rotation.x += 0.05;
+          } else {
+            tablet.rotation.x = 0;
+            screen.visible = true;
+            video.play();
+            rotating = false;
+          }
+        }
+
+        renderer.render(scene, camera);
+      });
+    });
+  </script>
   <style>
     html, body {
       margin: 0;
-      padding: 0;
       overflow: hidden;
-      width: 100%;
-      height: 100%;
-      background: #000;
-    }
-
-    #ar-container {
-      position: absolute;
       width: 100vw;
       height: 100vh;
-      top: 0;
-      left: 0;
-      z-index: 1;
+      background: black;
     }
-
-    canvas {
-      width: 100vw !important;
-      height: 100vh !important;
-      position: absolute !important;
-      top: 0;
-      left: 0;
-      z-index: 2;
-    }
-
-    #overlay {
-      position: absolute;
-      z-index: 3;
-      color: white;
-      background-color: rgba(0,0,0,0.5);
-      font-family: sans-serif;
-      padding: 10px;
-      bottom: 10px;
-      left: 10px;
-      font-size: 14px;
-    }
+    video { display: none; }
   </style>
 </head>
-<body>
-  <div id="ar-container"></div>
-  <div id="overlay">📷 Apunta a la imagen target para iniciar</div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      try {
-        const THREE = window.MINDAR.IMAGE.THREE;
-
-        console.log("⏳ Cargando archivo .mind...");
-        const mindarThree = new window.MINDAR.IMAGE.MindARThree({
-          container: document.querySelector("#ar-container"),
-          imageTargetSrc: "./target/moto.mind", // asegúrate que exista y sea válido
-          maxTrack: 1,
-        });
-        console.log("✅ .mind cargado correctamente");
-
-        const { renderer, scene, camera } = mindarThree;
-        const anchor = mindarThree.addAnchor(0);
-
-        const video = document.createElement("video");
-        video.src = "./assets/videomotor.mp4"; // asegúrate que el archivo exista
-        video.crossOrigin = "anonymous";
-        video.loop = true;
-        video.muted = true; // para que funcione autoplay
-        video.playsInline = true;
-        video.setAttribute("preload", "auto");
-
-        const texture = new THREE.VideoTexture(video);
-        texture.minFilter = THREE.LinearFilter;
-        texture.magFilter = THREE.LinearFilter;
-        texture.format = THREE.RGBFormat;
-
-        const geometry = new THREE.PlaneGeometry(1, 0.6); // ajusta según tamaño
-        const material = new THREE.MeshBasicMaterial({ map: texture });
-        const videoPlane = new THREE.Mesh(geometry, material);
-        videoPlane.position.set(0, 0, 0);
-        anchor.group.add(videoPlane);
-
-        anchor.onTargetFound = () => {
-          console.log("🎯 Imagen detectada");
-          document.getElementById("overlay").innerText = "✅ Imagen detectada";
-          video.play();
-        };
-
-        anchor.onTargetLost = () => {
-          console.log("🚫 Imagen perdida");
-          document.getElementById("overlay").innerText = "📷 Apunta a la imagen target para iniciar";
-          video.pause();
-        };
-
-        console.log("⏳ Iniciando MindAR...");
-        await mindarThree.start();
-        console.log("✅ MindAR iniciado correctamente");
-
-        renderer.setAnimationLoop(() => {
-          renderer.render(scene, camera);
-        });
-
-      } catch (err) {
-        console.error("❌ Error crítico:", err);
-        document.getElementById("overlay").innerText = "⚠️ Error cargando AR. Revisa consola.";
-      }
-    });
-  </script>
-</body>
+<body></body>
 </html>
