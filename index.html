@@ -1,17 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Tablet AR Interactivo</title>
 
-  <!-- Three.js -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
-
-  <!-- GLTFLoader (como script independiente que NO define THREE.GLTFLoader) -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/GLTFLoader.js"></script>
-
-  <!-- MindAR -->
+  <!-- Solo MindAR (ya incluye Three.js internamente) -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
+
+  <!-- Cargar GLTFLoader correctamente -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/GLTFLoader.js"></script>
 
   <style>
     html, body {
@@ -87,7 +84,8 @@
         let touched = false;
         let rotating = false;
 
-        const loader = new THREE__GLTFLoader(); // 💡 usamos clase global expuesta por GLTFLoader.js
+        // 💡 Usamos GLTFLoader desde THREE (ya que fue cargado en global)
+        const loader = new window.GLTFLoader();
         loader.load("./assets/tablet.glb", (gltf) => {
           tablet = gltf.scene;
           tablet.scale.set(0.2, 0.2, 0.2);
@@ -111,7 +109,6 @@
         });
 
         anchor.onTargetFound = () => {
-          console.log("🎯 Imagen detectada");
           document.getElementById("overlay").innerText = "✅ Imagen detectada";
           if (tablet) tablet.rotation.x = THREE.MathUtils.degToRad(-90);
           touched = false;
@@ -145,12 +142,6 @@
         document.getElementById("overlay").innerText = "⚠️ Error cargando AR. Revisa consola.";
       }
     });
-  </script>
-
-  <!-- Registramos GLTFLoader en el global como workaround -->
-  <script>
-    // 📌 Necesario porque GLTFLoader.js no asigna automáticamente en THREE
-    window.THREE__GLTFLoader = window.GLTFLoader;
   </script>
 </body>
 </html>
