@@ -2,86 +2,55 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <title>Tablet Interactiva AR</title>
+    <title>Test RA Webcam</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/aframe/mindar-image-aframe.prod.js"></script>
     <style>
-      html, body {
+      body, html {
         margin: 0;
+        padding: 0;
         overflow: hidden;
         width: 100vw;
         height: 100vh;
       }
-      #loader {
+      #mensaje {
         position: absolute;
-        z-index: 2;
+        top: 10px;
+        left: 10px;
         color: white;
-        background-color: rgba(0, 0, 0, 0.7);
-        padding: 10px;
         font-family: sans-serif;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding: 5px 10px;
+        z-index: 999;
       }
     </style>
   </head>
   <body>
-    <div id="loader">📷 Apunta a la imagen para comenzar</div>
+    <div id="mensaje">📷 Cargando cámara...</div>
 
     <a-scene
-      mindar-image="imageTargetSrc: ./target/moto.mind; autoStart: true;"
+      mindar-image="imageTargetSrc: ./target/moto.mind; autoStart: true"
       color-space="sRGB"
       renderer="colorManagement: true, physicallyCorrectLights: true"
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: true"
       embedded
     >
-      <a-assets>
-        <a-asset-item id="tablet" src="./assets/tablet.glb"></a-asset-item>
-        <video
-          id="video"
-          src="./assets/videomotor.mp4"
-          preload="auto"
-          autoplay
-          loop
-          webkit-playsinline
-          playsinline
-          crossorigin="anonymous"
-        ></video>
-      </a-assets>
+      <a-assets></a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <a-gltf-model
-          id="tablet-model"
-          src="#tablet"
-          position="0 0 0"
-          scale="0.25 0.25 0.25"
-          rotation="0 0 0"
-        ></a-gltf-model>
-
-        <a-video
-          id="pantalla"
-          src="#video"
-          position="0 0.3 0.03"
-          width="0.7"
-          height="0.4"
-          rotation="0 0 0"
-          visible="false"
-        ></a-video>
+        <a-plane position="0 0 0" width="1" height="0.6" color="blue"></a-plane>
       </a-entity>
     </a-scene>
 
     <script>
-      const video = document.querySelector("#video");
-      const pantalla = document.querySelector("#pantalla");
-      const tablet = document.querySelector("#tablet-model");
-
-      tablet.addEventListener("click", () => {
-        pantalla.setAttribute("visible", true);
-        video.play();
-      });
-
       document.querySelector("a-scene").addEventListener("arReady", () => {
-        document.getElementById("loader").style.display = "none";
+        document.getElementById("mensaje").innerText = "✅ Cámara activa. Apunta al target";
+      });
+      document.querySelector("a-scene").addEventListener("arError", (e) => {
+        document.getElementById("mensaje").innerText = "❌ Error en AR: " + e;
       });
     </script>
   </body>
