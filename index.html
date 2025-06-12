@@ -3,16 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <title>Tablet AR Interactivo</title>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
-  <script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      background: black;
+    }
+    video { display: none; }
+  </style>
+</head>
+<body>
   <script type="module">
+    import * as THREE from 'https://unpkg.com/three@0.150.1/build/three.module.js';
     import { GLTFLoader } from 'https://unpkg.com/three@0.150.1/examples/jsm/loaders/GLTFLoader.js';
-    import { OrbitControls } from 'https://unpkg.com/three@0.150.1/examples/jsm/controls/OrbitControls.js';
+    import { MindARThree } from 'https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js';
 
     document.addEventListener("DOMContentLoaded", async () => {
-      const THREE = window.MINDAR.IMAGE.THREE;
-
-      const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+      const mindarThree = new MindARThree({
         container: document.body,
         imageTargetSrc: "./target/moto.mind",
         maxTrack: 1
@@ -36,26 +45,24 @@
       const screenGeometry = new THREE.PlaneGeometry(1, 0.6);
       const screenMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
       const screen = new THREE.Mesh(screenGeometry, screenMaterial);
-      screen.visible = false; // invisible hasta tocar
+      screen.visible = false;
 
       let tablet;
 
-      // Cargar modelo GLB de tablet
       const loader = new GLTFLoader();
       const gltf = await loader.loadAsync("./assets/tablet.glb");
       tablet = gltf.scene;
       tablet.scale.set(0.2, 0.2, 0.2);
-      tablet.rotation.x = THREE.MathUtils.degToRad(-90); // vertical de pie
+      tablet.rotation.x = THREE.MathUtils.degToRad(-90);
       tablet.position.set(0, 0, 0);
       anchor.group.add(tablet);
 
-      screen.position.set(0, 0.5, 0.06); // ajusta para que encaje con la pantalla
+      screen.position.set(0, 0.5, 0.06);
       anchor.group.add(screen);
 
       let touched = false;
       let rotating = false;
 
-      // Captura de toque
       renderer.domElement.addEventListener("click", (event) => {
         const rect = renderer.domElement.getBoundingClientRect();
         pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -72,10 +79,10 @@
 
       anchor.onTargetFound = () => {
         console.log("🎯 Imagen detectada");
-        video.pause(); // por si ya estaba reproduciendo
+        video.pause();
         touched = false;
         rotating = false;
-        tablet.rotation.x = THREE.MathUtils.degToRad(-90); // reset posición vertical
+        tablet.rotation.x = THREE.MathUtils.degToRad(-90);
         screen.visible = false;
       };
 
@@ -86,7 +93,6 @@
       await mindarThree.start();
       renderer.setAnimationLoop(() => {
         if (rotating) {
-          // animar rotación de vertical a horizontal
           if (tablet.rotation.x < 0) {
             tablet.rotation.x += 0.05;
           } else {
@@ -101,16 +107,5 @@
       });
     });
   </script>
-  <style>
-    html, body {
-      margin: 0;
-      overflow: hidden;
-      width: 100vw;
-      height: 100vh;
-      background: black;
-    }
-    video { display: none; }
-  </style>
-</head>
-<body></body>
+</body>
 </html>
