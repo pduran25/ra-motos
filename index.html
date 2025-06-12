@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <title>Tablet AR Interactivo</title>
 
-  <!-- Three.js base y GLTFLoader -->
+  <!-- THREE.js y GLTFLoader -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/GLTFLoader.js"></script>
 
-  <!-- MindAR (sin módulos) -->
+  <!-- MindAR sin módulos -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
 
   <style>
@@ -86,7 +86,7 @@
         loader.load('./assets/tablet.glb', (gltf) => {
           tablet = gltf.scene;
           tablet.scale.set(0.2, 0.2, 0.2);
-          tablet.rotation.x = THREE.MathUtils.degToRad(-90); // vertical
+          tablet.rotation.x = THREE.MathUtils.degToRad(-90);
           tablet.position.set(0, 0, 0);
           anchor.group.add(tablet);
           anchor.group.add(screen);
