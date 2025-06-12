@@ -2,78 +2,68 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Tablet AR Video Interactivo</title>
+    <title>Tablet AR Interactivo</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/aframe/mindar-image-aframe.prod.js"></script>
     <style>
       body, html { margin: 0; overflow: hidden; }
-      #overlay {
+      #mensaje {
         position: absolute;
-        bottom: 10px;
+        top: 10px;
         left: 10px;
+        z-index: 10;
         color: white;
-        background: rgba(0, 0, 0, 0.5);
-        padding: 10px;
-        z-index: 99;
         font-family: sans-serif;
+        background: rgba(0,0,0,0.6);
+        padding: 8px;
+        border-radius: 4px;
       }
     </style>
   </head>
   <body>
-    <div id="overlay">📷 Apunta al target y toca la pantalla de la tablet</div>
+    <div id="mensaje">📷 Apunta a la imagen y toca la tablet</div>
 
-    <a-scene 
-      mindar-image="imageTargetSrc: ./target/moto.mind;" 
-      embedded 
-      color-space="sRGB" 
-      renderer="colorManagement: true, physicallyCorrectLights: true;" 
-      vr-mode-ui="enabled: false" 
-      device-orientation-permission-ui="enabled: true">
-
-      <!-- Assets -->
+    <a-scene
+      mindar-image="imageTargetSrc: ./target/moto.mind; autoStart: true"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: true"
+      embedded
+    >
       <a-assets>
-        <a-asset-item id="modelo-tablet" src="./assets/tablet.glb"></a-asset-item>
-        <video id="video-promo" src="./assets/videomotor.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video>
+        <a-asset-item id="tablet" src="./assets/tablet.glb"></a-asset-item>
+        <video id="video" src="./assets/videomotor.mp4" preload="auto" playsinline crossorigin="anonymous"></video>
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- Target -->
       <a-entity mindar-image-target="targetIndex: 0">
-
         <!-- Modelo de la tablet -->
-        <a-gltf-model 
-          id="tablet" 
-          src="#modelo-tablet" 
-          scale="0.2 0.2 0.2" 
-          position="0 0 0" 
-          rotation="-90 0 0">
-        </a-gltf-model>
+        <a-gltf-model id="tabletModel" src="#tablet" position="0 0 0" scale="0.2 0.2 0.2"></a-gltf-model>
 
-        <!-- Pantalla de video (plano encima del modelo) -->
-        <a-video 
-          id="pantalla" 
-          src="#video-promo" 
-          position="0 0.45 0.05" 
-          rotation="-90 0 0" 
-          width="0.6" 
-          height="0.35" 
-          visible="false">
-        </a-video>
-
+        <!-- Pantalla de la tablet con el video (simulado con plano) -->
+        <a-plane id="pantalla"
+          width="0.6" height="0.4"
+          position="0 0.4 0.05"
+          material="shader: flat; src: #video"
+          visible="false"
+        ></a-plane>
       </a-entity>
     </a-scene>
 
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const pantalla = document.querySelector('#pantalla');
-        const video = document.querySelector('#video-promo');
-        const tablet = document.querySelector('#tablet');
+      const video = document.querySelector('#video');
+      const tabletModel = document.querySelector('#tabletModel');
+      const pantalla = document.querySelector('#pantalla');
 
-        tablet.addEventListener('click', () => {
-          pantalla.setAttribute('visible', 'true');
-          video.play();
-        });
+      tabletModel.addEventListener('click', () => {
+        pantalla.setAttribute('visible', true);
+        video.play();
+        document.getElementById("mensaje").innerText = "▶️ Video reproduciéndose";
+      });
+
+      video.addEventListener("ended", () => {
+        pantalla.setAttribute('visible', false);
+        document.getElementById("mensaje").innerText = "📷 Apunta a la imagen y toca la tablet";
       });
     </script>
   </body>
