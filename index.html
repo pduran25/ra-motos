@@ -11,11 +11,11 @@
     </style>
   </head>
   <body>
-    <script type="module">
+    <script>
       document.addEventListener("DOMContentLoaded", async () => {
         const mindarThree = new window.MINDAR.IMAGE.MindARThree({
           container: document.body,
-          imageTargetSrc: "./target/moto.mind",
+          imageTargetSrc: "./target/moto.mind", // ← ¡corregida!
           maxTrack: 1,
         });
 
