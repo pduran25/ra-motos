@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Tablet AR Interactivo</title>
   <style>
     html, body {
@@ -18,7 +18,7 @@
   <script type="module">
     import * as THREE from 'https://unpkg.com/three@0.150.1/build/three.module.js';
     import { GLTFLoader } from 'https://unpkg.com/three@0.150.1/examples/jsm/loaders/GLTFLoader.js';
-    import { MindARThree } from 'https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.module.js';
+    import { MindARThree } from 'https://unpkg.com/mind-ar@1.1.4/dist/mindar-image-three.module.js';
 
     document.addEventListener("DOMContentLoaded", async () => {
       const mindarThree = new MindARThree({
@@ -52,7 +52,7 @@
       const gltf = await loader.loadAsync("./assets/tablet.glb");
       tablet = gltf.scene;
       tablet.scale.set(0.2, 0.2, 0.2);
-      tablet.rotation.x = THREE.MathUtils.degToRad(-90);
+      tablet.rotation.x = THREE.MathUtils.degToRad(-90); // vertical de pie
       tablet.position.set(0, 0, 0);
       anchor.group.add(tablet);
 
@@ -81,7 +81,7 @@
         video.pause();
         touched = false;
         rotating = false;
-        tablet.rotation.x = THREE.MathUtils.degToRad(-90);
+        tablet.rotation.x = THREE.MathUtils.degToRad(-90); // reiniciar a vertical
         screen.visible = false;
       };
 
