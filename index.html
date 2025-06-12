@@ -1,90 +1,87 @@
 <!DOCTYPE html>
 <html lang="es">
   <head>
-    <meta charset="UTF-8" />
-    <title>Tablet AR con Video</title>
+    <meta charset="utf-8" />
+    <title>Tablet Interactiva AR</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/aframe/mindar-image-aframe.prod.js"></script>
     <style>
-      html,
-      body {
+      html, body {
         margin: 0;
-        padding: 0;
         overflow: hidden;
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: 100vh;
       }
-      #overlay {
+      #loader {
         position: absolute;
-        bottom: 10px;
-        left: 10px;
+        z-index: 2;
         color: white;
-        background: rgba(0, 0, 0, 0.5);
+        background-color: rgba(0, 0, 0, 0.7);
         padding: 10px;
         font-family: sans-serif;
-        z-index: 999;
       }
     </style>
   </head>
   <body>
-    <div id="overlay">📷 Apunta al código para iniciar</div>
+    <div id="loader">📷 Apunta a la imagen para comenzar</div>
 
     <a-scene
-      mindar-image="imageTargetSrc: ./target/moto.mind"
+      mindar-image="imageTargetSrc: ./target/moto.mind; autoStart: true;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights: true"
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: true"
       embedded
-      color-space="sRGB"
-      renderer="colorManagement: true; physicallyCorrectLights: true"
     >
       <a-assets>
-        <a-asset-item id="tabletModel" src="./assets/tablet.glb"></a-asset-item>
+        <a-asset-item id="tablet" src="./assets/tablet.glb"></a-asset-item>
         <video
-          id="videoAR"
+          id="video"
           src="./assets/videomotor.mp4"
           preload="auto"
-          crossorigin="anonymous"
+          autoplay
+          loop
           webkit-playsinline
           playsinline
+          crossorigin="anonymous"
         ></video>
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <!-- Modelo de Tablet -->
         <a-gltf-model
-          id="tablet"
-          src="#tabletModel"
+          id="tablet-model"
+          src="#tablet"
           position="0 0 0"
-          scale="0.2 0.2 0.2"
+          scale="0.25 0.25 0.25"
           rotation="0 0 0"
         ></a-gltf-model>
 
-        <!-- Pantalla de Video -->
         <a-video
-          id="pantallaVideo"
-          src="#videoAR"
-          position="0 0.1 0.01"
-          width="0.6"
-          height="0.35"
+          id="pantalla"
+          src="#video"
+          position="0 0.3 0.03"
+          width="0.7"
+          height="0.4"
+          rotation="0 0 0"
           visible="false"
         ></a-video>
       </a-entity>
     </a-scene>
 
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const video = document.querySelector("#videoAR");
-        const pantalla = document.querySelector("#pantallaVideo");
-        const tablet = document.querySelector("#tablet");
+      const video = document.querySelector("#video");
+      const pantalla = document.querySelector("#pantalla");
+      const tablet = document.querySelector("#tablet-model");
 
-        tablet.addEventListener("click", () => {
-          if (video.paused) {
-            pantalla.setAttribute("visible", "true");
-            video.play();
-          }
-        });
+      tablet.addEventListener("click", () => {
+        pantalla.setAttribute("visible", true);
+        video.play();
+      });
+
+      document.querySelector("a-scene").addEventListener("arReady", () => {
+        document.getElementById("loader").style.display = "none";
       });
     </script>
   </body>
