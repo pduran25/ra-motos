@@ -2,59 +2,52 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>AR Moto con Video</title>
-    <!-- Carga correcta sin usar 'type=module' -->
+    <title>MindAR Video Test</title>
     <script src="./libs/three.min.js"></script>
     <script src="./libs/mindar-image-three.prod.js"></script>
     <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
-      video {
-        display: none;
-      }
+      body { margin: 0; overflow: hidden; }
+      video { display: none; }
     </style>
   </head>
   <body>
-    <script>
-      window.addEventListener("DOMContentLoaded", async () => {
+    <script type="module">
+      document.addEventListener("DOMContentLoaded", async () => {
         const mindarThree = new window.MINDAR.IMAGE.MindARThree({
           container: document.body,
-          imageTargetSrc: "./targets/moto.mind", // asegúrate de que este archivo existe
+          imageTargetSrc: "./targets/moto.mind",
           maxTrack: 1,
         });
 
         const { renderer, scene, camera } = mindarThree;
         const anchor = mindarThree.addAnchor(0);
 
-        // Crear video
         const video = document.createElement("video");
-        video.src = "./assets/videomoto.mp4"; // asegúrate de que existe
+        video.src = "./assets/videomotor.mp4";
         video.crossOrigin = "anonymous";
         video.loop = true;
-        video.muted = true;
+        video.muted = false;
         video.playsInline = true;
-
-        // Para navegadores móviles, requiere interacción
-        document.body.addEventListener("click", () => {
-          video.play();
-        });
+        video.setAttribute("preload", "auto");
 
         const texture = new THREE.VideoTexture(video);
-        const screenGeo = new THREE.PlaneGeometry(1, 0.5625); // 16:9
-        const screenMat = new THREE.MeshBasicMaterial({ map: texture });
-        const screenMesh = new THREE.Mesh(screenGeo, screenMat);
+        const geometry = new THREE.PlaneGeometry(1, 0.6);
+        const material = new THREE.MeshBasicMaterial({ map: texture });
 
-        screenMesh.position.set(0, 0, 0);
-        screenMesh.rotation.x = -Math.PI / 2;
+        const videoPlane = new THREE.Mesh(geometry, material);
+        videoPlane.position.set(0, 0, 0);
 
-        anchor.group.add(screenMesh);
+        anchor.group.add(videoPlane);
 
-        anchor.onTargetFound = () => video.play();
-        anchor.onTargetLost = () => video.pause();
+        anchor.onTargetFound = () => {
+          video.play();
+        };
 
-        await mindarThree.start(); // aquí es donde activa la cámara
+        anchor.onTargetLost = () => {
+          video.pause();
+        };
+
+        await mindarThree.start();
         renderer.setAnimationLoop(() => {
           renderer.render(scene, camera);
         });
