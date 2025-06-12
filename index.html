@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Tablet AR Interactivo</title>
 
-  <!-- Carga Three.js y GLTFLoader -->
+  <!-- Three.js y GLTFLoader -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/GLTFLoader.js"></script>
 
@@ -57,8 +57,6 @@
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
       try {
-        const THREE = window.MINDAR.IMAGE.THREE;
-
         const mindarThree = new window.MINDAR.IMAGE.MindARThree({
           container: document.querySelector("#ar-container"),
           imageTargetSrc: "./target/moto.mind",
@@ -81,10 +79,10 @@
         const screenMaterial = new THREE.MeshBasicMaterial({ map: texture });
         const screen = new THREE.Mesh(screenGeometry, screenMaterial);
         screen.visible = false;
-        screen.position.set(0, 0.5, 0.06); // Ajusta según el modelo
+        screen.position.set(0, 0.5, 0.06); // ajusta si es necesario
 
         let tablet;
-        const loader = new THREE.GLTFLoader();
+        const loader = new window.THREE.GLTFLoader();
         loader.load('./assets/tablet.glb', (gltf) => {
           tablet = gltf.scene;
           tablet.scale.set(0.2, 0.2, 0.2);
@@ -120,9 +118,7 @@
           video.pause();
           touched = false;
           rotating = false;
-          if (tablet) {
-            tablet.rotation.x = THREE.MathUtils.degToRad(-90);
-          }
+          if (tablet) tablet.rotation.x = THREE.MathUtils.degToRad(-90);
           screen.visible = false;
         };
 
@@ -143,6 +139,7 @@
               rotating = false;
             }
           }
+
           renderer.render(scene, camera);
         });
 
