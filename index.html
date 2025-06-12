@@ -47,59 +47,66 @@
 </head>
 <body>
   <div id="ar-container"></div>
-  <div id="overlay">Escanea la imagen target para activar el AR</div>
+  <div id="overlay">📷 Apunta a la imagen target para iniciar</div>
 
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
       try {
         const THREE = window.MINDAR.IMAGE.THREE;
 
+        console.log("⏳ Cargando archivo .mind...");
         const mindarThree = new window.MINDAR.IMAGE.MindARThree({
           container: document.querySelector("#ar-container"),
-          imageTargetSrc: "./target/moto.mind", // asegúrate de que exista y sea correcto
+          imageTargetSrc: "./target/moto.mind", // asegúrate que exista y sea válido
           maxTrack: 1,
         });
+        console.log("✅ .mind cargado correctamente");
 
         const { renderer, scene, camera } = mindarThree;
         const anchor = mindarThree.addAnchor(0);
 
         const video = document.createElement("video");
-        video.src = "./assets/videomoto.mp4";
+        video.src = "./assets/videomotor.mp4"; // asegúrate que el archivo exista
         video.crossOrigin = "anonymous";
         video.loop = true;
-        video.muted = false;
+        video.muted = true; // para que funcione autoplay
         video.playsInline = true;
         video.setAttribute("preload", "auto");
 
         const texture = new THREE.VideoTexture(video);
-        const geometry = new THREE.PlaneGeometry(1, 0.6);
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.format = THREE.RGBFormat;
+
+        const geometry = new THREE.PlaneGeometry(1, 0.6); // ajusta según tamaño
         const material = new THREE.MeshBasicMaterial({ map: texture });
         const videoPlane = new THREE.Mesh(geometry, material);
         videoPlane.position.set(0, 0, 0);
         anchor.group.add(videoPlane);
 
         anchor.onTargetFound = () => {
-          console.log("🎯 Imagen target detectada");
-          video.play();
+          console.log("🎯 Imagen detectada");
           document.getElementById("overlay").innerText = "✅ Imagen detectada";
+          video.play();
         };
 
         anchor.onTargetLost = () => {
           console.log("🚫 Imagen perdida");
+          document.getElementById("overlay").innerText = "📷 Apunta a la imagen target para iniciar";
           video.pause();
-          document.getElementById("overlay").innerText = "Escanea la imagen target para activar el AR";
         };
 
-        console.log("⏳ Iniciando AR...");
+        console.log("⏳ Iniciando MindAR...");
         await mindarThree.start();
         console.log("✅ MindAR iniciado correctamente");
 
         renderer.setAnimationLoop(() => {
           renderer.render(scene, camera);
         });
-      } catch (e) {
-        console.error("❌ Error crítico:", e);
-        document.getElementById("overlay").innerText = "⚠️ Error al iniciar AR. Revisa consola.";
+
+      } catch (err) {
+        console.error("❌ Error crítico:", err);
+        document.getElementById("overlay").innerText = "⚠️ Error cargando AR. Revisa consola.";
       }
     });
   </script>
