@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <title>Tablet AR Interactivo</title>
+  <script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
   <style>
     html, body {
       margin: 0;
@@ -15,12 +17,12 @@
   </style>
 </head>
 <body>
-  <script type="module">
-    import * as THREE from 'https://unpkg.com/three@0.150.1/build/three.module.js';
-    import { GLTFLoader } from 'https://unpkg.com/three@0.150.1/examples/jsm/loaders/GLTFLoader.js';
-    import { MindARThree } from 'https://unpkg.com/mind-ar@1.1.4/dist/mindar-image-three.module.js';
-
+  <script>
     document.addEventListener("DOMContentLoaded", async () => {
+      const THREE = window.MINDAR.IMAGE.THREE;
+      const MindARThree = window.MINDAR.IMAGE.MindARThree;
+      const loader = new THREE.GLTFLoader();
+
       const mindarThree = new MindARThree({
         container: document.body,
         imageTargetSrc: "./target/moto.mind",
@@ -48,16 +50,16 @@
 
       let tablet;
 
-      const loader = new GLTFLoader();
-      const gltf = await loader.loadAsync("./assets/tablet.glb");
-      tablet = gltf.scene;
-      tablet.scale.set(0.2, 0.2, 0.2);
-      tablet.rotation.x = THREE.MathUtils.degToRad(-90); // vertical de pie
-      tablet.position.set(0, 0, 0);
-      anchor.group.add(tablet);
+      new THREE.GLTFLoader().load("./assets/tablet.glb", (gltf) => {
+        tablet = gltf.scene;
+        tablet.scale.set(0.2, 0.2, 0.2);
+        tablet.rotation.x = THREE.MathUtils.degToRad(-90);
+        tablet.position.set(0, 0, 0);
+        anchor.group.add(tablet);
 
-      screen.position.set(0, 0.5, 0.06);
-      anchor.group.add(screen);
+        screen.position.set(0, 0.5, 0.06);
+        anchor.group.add(screen);
+      });
 
       let touched = false;
       let rotating = false;
@@ -68,11 +70,12 @@
         pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
         raycaster.setFromCamera(pointer, camera);
-        const intersects = raycaster.intersectObject(tablet, true);
-
-        if (intersects.length > 0 && !touched && !rotating) {
-          touched = true;
-          rotating = true;
+        if (tablet) {
+          const intersects = raycaster.intersectObject(tablet, true);
+          if (intersects.length > 0 && !touched && !rotating) {
+            touched = true;
+            rotating = true;
+          }
         }
       });
 
@@ -81,7 +84,9 @@
         video.pause();
         touched = false;
         rotating = false;
-        tablet.rotation.x = THREE.MathUtils.degToRad(-90); // reiniciar a vertical
+        if (tablet) {
+          tablet.rotation.x = THREE.MathUtils.degToRad(-90);
+        }
         screen.visible = false;
       };
 
@@ -91,7 +96,7 @@
 
       await mindarThree.start();
       renderer.setAnimationLoop(() => {
-        if (rotating) {
+        if (tablet && rotating) {
           if (tablet.rotation.x < 0) {
             tablet.rotation.x += 0.05;
           } else {
