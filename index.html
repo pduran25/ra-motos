@@ -1,57 +1,78 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>MindAR Video Test</title>
-    <script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
-    <style>
-      body { margin: 0; overflow: hidden; }
-      video { display: none; }
-    </style>
-  </head>
-  <body>
-    <script>
-      document.addEventListener("DOMContentLoaded", async () => {
-        const mindarThree = new window.MINDAR.IMAGE.MindARThree({
-          container: document.body,
-          imageTargetSrc: "./target/moto.mind",
-          maxTrack: 1,
-        });
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MindAR Video AR</title>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      background: #000;
+    }
 
-        const { renderer, scene, camera } = mindarThree;
-        const anchor = mindarThree.addAnchor(0);
+    canvas {
+      display: block !important;
+      width: 100vw !important;
+      height: 100vh !important;
+    }
 
-        const video = document.createElement("video");
-        video.src = "./assets/videomotor.mp4";
-        video.crossOrigin = "anonymous";
-        video.loop = true;
-        video.muted = false;
-        video.playsInline = true;
-        video.setAttribute("preload", "auto");
+    #ar-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div id="ar-container"></div>
 
-        const texture = new THREE.VideoTexture(video);
-        const geometry = new THREE.PlaneGeometry(1, 0.6);
-        const material = new THREE.MeshBasicMaterial({ map: texture });
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const THREE = window.MINDAR.IMAGE.THREE;
 
-        const videoPlane = new THREE.Mesh(geometry, material);
-        videoPlane.position.set(0, 0, 0);
-
-        anchor.group.add(videoPlane);
-
-        anchor.onTargetFound = () => {
-          video.play();
-        };
-
-        anchor.onTargetLost = () => {
-          video.pause();
-        };
-
-        await mindarThree.start();
-        renderer.setAnimationLoop(() => {
-          renderer.render(scene, camera);
-        });
+      const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+        container: document.querySelector("#ar-container"),
+        imageTargetSrc: "./target/moto.mind",
+        maxTrack: 1,
       });
-    </script>
-  </body>
+
+      const { renderer, scene, camera } = mindarThree;
+      const anchor = mindarThree.addAnchor(0);
+
+      const video = document.createElement("video");
+      video.src = "./assets/videomotor.mp4";
+      video.crossOrigin = "anonymous";
+      video.loop = true;
+      video.muted = false;
+      video.playsInline = true;
+      video.setAttribute("preload", "auto");
+
+      const texture = new THREE.VideoTexture(video);
+      const geometry = new THREE.PlaneGeometry(1, 0.6);
+      const material = new THREE.MeshBasicMaterial({ map: texture });
+      const videoPlane = new THREE.Mesh(geometry, material);
+      videoPlane.position.set(0, 0, 0);
+
+      anchor.group.add(videoPlane);
+
+      anchor.onTargetFound = () => {
+        video.play();
+      };
+
+      anchor.onTargetLost = () => {
+        video.pause();
+      };
+
+      await mindarThree.start();
+      renderer.setAnimationLoop(() => {
+        renderer.render(scene, camera);
+      });
+    });
+  </script>
+</body>
 </html>
